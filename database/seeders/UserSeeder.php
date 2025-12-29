@@ -69,6 +69,24 @@ class UserSeeder extends Seeder
             'is_active' => true,
             'approved_at' => now(),
         ]);
+
+        // Create Blocked User (for testing)
+        User::create([
+            'username' => 'blocked',
+            'email' => 'blocked@example.com',
+            'password' => Hash::make('password'),
+            'role' => 'block_user',
+            'company_name' => 'Blocked Company',
+            'country' => 'United States',
+            'city' => 'Miami',
+            'state' => 'FL',
+            'zip' => '33101',
+            'contact_name' => 'Blocked User',
+            'nda_agreement' => true,
+            'nda_agreed_at' => now(),
+            'is_active' => false,
+            'approved_at' => null,
+        ]);
     }
 }
 

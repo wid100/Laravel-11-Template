@@ -27,9 +27,16 @@ class CheckRole
             return redirect()->route('login')->with('error', 'Your account has been blocked.');
         }
 
+        // Check if user is active
+        if (!$user->is_active) {
+            auth()->logout();
+            return redirect()->route('login')->with('error', 'Your account is not active. Please wait for approval.');
+        }
+
         // Check if user has required role
         if (!in_array($user->role, $roles)) {
-            abort(403, 'Unauthorized access.');
+            auth()->logout();
+            return redirect()->route('login')->with('error', 'You do not have permission to access this area.');
         }
 
         return $next($request);

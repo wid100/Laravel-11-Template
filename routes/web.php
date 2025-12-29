@@ -5,27 +5,34 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\BulkOrderController;
 use App\Http\Controllers\Admin\PricingTierController;
 use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Auth\LoginController;
 
 Route::get('/', function () {
-    return redirect('/admin/dashboard');
+    if (auth()->check() && auth()->user()->hasAdminAccess()) {
+        return redirect()->route('admin.dashboard');
+    }
+    return redirect()->route('login');
 });
 
-// Authentication Routes
-Route::get('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
-Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register'])->name('register.submit');
-Route::get('/register/success', function () {
-    return view('auth.register-success');
-})->name('register.success');
+// Authentication Routes (Public)
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [LoginController::class, 'login']);
+    
+    Route::get('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register'])->name('register.submit');
+    Route::get('/register/success', function () {
+        return view('auth.register-success');
+    })->name('register.success');
+});
 
-// Logout Route
-Route::post('/logout', function () {
-    auth()->logout();
-    request()->session()->invalidate();
-    request()->session()->regenerateToken();
-    return redirect('/');
-})->name('logout');
+// Logout Route (Authenticated users only)
+Route::middleware('auth')->group(function () {
+    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+});
 
-Route::prefix('admin')->name('admin.')->group(function () {
+// Admin Routes (Protected - Only super_admin and admin can access)
+Route::middleware(['auth', 'role:super_admin,admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
     // Bulk Orders
