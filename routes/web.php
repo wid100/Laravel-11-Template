@@ -17,6 +17,14 @@ Route::get('/register/success', function () {
     return view('auth.register-success');
 })->name('register.success');
 
+// Logout Route
+Route::post('/logout', function () {
+    auth()->logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+    return redirect('/');
+})->name('logout');
+
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
